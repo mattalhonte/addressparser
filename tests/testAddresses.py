@@ -119,7 +119,7 @@ class Address(unittest.TestCase):
         self.assertIn(got[0], [expected])
 
     def testStreetNamePreTypes(self):
-        expected = [
+       expected = [
             "1600 Avenue L Brooklyn, NY",
             "3000 Avenue X Brooklyn, NY",
             "50 Avenue X Brooklyn, NY"
@@ -129,6 +129,36 @@ class Address(unittest.TestCase):
             text = 'blab blah bleu %s foo fe hu' % text
             got = parser.parse(text)[0]
             self.assertIn(got, expected)
+
+    def test_expand_directions(self):
+        'basic -  Expands directional-letters to the full name of the direction, as per for the format in the DOT Street Name Dictionary'
+
+        source = '15 E 5 Street, New York, NY'
+        expect = ['15 EAST 5 Street, New York, NY']
+        self.checkExpectation(source, expect)
+
+    def test_remove_number_suffixes(self):
+        'basic -  Removes stuff like the "th" in "5th", as per the DOT Street Name Dictionary'
+
+        source = '241 72nd Street, Brooklyn, NY'
+        expect = ['241 72 Street, Brooklyn, NY']
+        self.checkExpectation(source, expect)
+
+
+    def test_no_space_commas(self):
+        'basic -  NYNY'
+
+        source = '90 Wall Street , New York, NY'
+        expect = ['90 Wall Street, New York, NY']
+        self.checkExpectation(source, expect)
+
+    def test_add_implied_street_to_dir_street(self):
+        'basic -  NYNY'
+
+        source = '115 EAST 23, New York, NY'
+        expect = ['115 EAST 23 STREET, New York, NY']
+        self.checkExpectation(source, expect)
+
 
     # @attr(test='wip')
     @SkipTest
