@@ -33,7 +33,6 @@ def remove_period_after_throughway_name(text):
 
 def remove_period_between_nnp_and_lu(text):
 
-    import ipdb; ipdb.set_trace()
     tokens = word_tokenize(text)
     tags = nltk.pos_tag(tokens)
     tags = transform_tags(tags, text)
@@ -178,7 +177,6 @@ def do_occupancy_abbreviations(text):
 
 def transform(text, verbose=False):
 
-    # import ipdb; ipdb.set_trace()
     if verbose:
         print 'Source Text: %s' % text
 
