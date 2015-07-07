@@ -88,9 +88,7 @@ def remove_number_suffixes(myString):
 def no_space_commas(myString):
     return myString.replace(r""" ,""", r""",""")
 
- regex for streets with a direction but not the word "street"
-#Works on addresses that have already been extracted, then extracts the street
-name
+# regex for streets with a direction but not the word "street". Works on addresses that have already been extracted, then extracts the street name
 numberStreet = re.compile(r"""(?<=\d\s) #It'll be one space away from a digit
 (?P<Direction>North|South|East|West) #It has a d
 irection (either written or abbreviated)
@@ -100,8 +98,8 @@ oklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
 re.IGNORECASE | re.X)
 
 #Let's try and add the word "street" in a few places it's clearly implied
-def addImpliedStreetToDirStreet(myString):
-return re.sub(numberStreet, r"""\1\2 STREET\3""", myString)
+def add_implied_street_to_dir_street(myString):
+    return re.sub(numberStreet, r"""\1\2 STREET\3""", myString)
 
 _ny_ny = re.compile('(new\s+york|NY)[\s,]+(new\s+york|NY)\s?', re.IGNORECASE)
 
@@ -169,11 +167,15 @@ def prepare_text(text, verbose=False):
 
     text = remove_number_suffixes(text)
     if verbose:                                         
-        print 'expand_directions:\n\t%s\n' % text
+        print 'remove_number_suffixes:\n\t%s\n' % text
   
-    text = expand_directions(text)
+    text = no_space_commas(text)
     if verbose:                                         
-        print 'expand_directions:\n\t%s\n' % text
+        print 'no_space_commas:\n\t%s\n' % text
+
+    text = add_implied_street_to_dir_street(text)
+    if verbose:                                         
+        print 'add_implied_street_to_dir_street:\n\t%s\n' % text
 
     return text
 
