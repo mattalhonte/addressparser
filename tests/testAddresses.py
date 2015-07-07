@@ -100,7 +100,7 @@ class Address(unittest.TestCase):
     def testNYNY(self):
         'basic -  NYNY'
 
-        source = '55 Water Street, 9th Floor SW, New York, NY 10041'
+        source = '''55 Water Street, 9th Floor SW, New York, NY 10041'''
         expect = ['55 Water Street, 9th Floor SW, Manhattan, NY']
         self.checkExpectation(source, expect)
 
@@ -119,7 +119,7 @@ class Address(unittest.TestCase):
         self.assertIn(got[0], [expected])
 
     def testStreetNamePreTypes(self):
-       expected = [
+        expected = [
             "1600 Avenue L Brooklyn, NY",
             "3000 Avenue X Brooklyn, NY",
             "50 Avenue X Brooklyn, NY"
@@ -133,31 +133,31 @@ class Address(unittest.TestCase):
     def test_expand_directions(self):
         'basic -  Expands directional-letters to the full name of the direction, as per for the format in the DOT Street Name Dictionary'
 
-        source = '15 E 5 Street, New York, NY'
-        expect = ['15 EAST 5 Street, New York, NY']
+        source = '''15 E 151 Street, Bronx, NY'''
+        expect = ['15 EAST 151 Street, Bronx, NY']
         self.checkExpectation(source, expect)
 
     def test_remove_number_suffixes(self):
         'basic -  Removes stuff like the "th" in "5th", as per the DOT Street Name Dictionary'
 
-        source = '241 72nd Street, Brooklyn, NY'
+        source = '''241 72nd Street, Brooklyn, NY'''
         expect = ['241 72 Street, Brooklyn, NY']
         self.checkExpectation(source, expect)
 
 
     def test_no_space_commas(self):
-        'basic -  NYNY'
+        'Make sure there are no spaces after commas'
 
-        source = '90 Wall Street , New York, NY'
-        expect = ['90 Wall Street, New York, NY']
+        source = '''90 86 Street , Brooklyn, NY'''
+        expect = ['90 86 Street, Brooklyn, NY']
         self.checkExpectation(source, expect)
 
     def test_add_implied_street_to_dir_street(self):
-        'basic -  NYNY'
+        'If a street with a compass direction lacks the word "Street", adds it'
 
-        source = '115 EAST 23, New York, NY'
-        expect = ['115 EAST 23 STREET, New York, NY']
-        self.checkExpectation(source, expect)
+        source = '''115 EAST 163, Bronx, NY'''
+        expect = ['115 EAST 163 STREET, Bronx, NY']
+        self.checkExpectation(source, expect, verbose=True)
 
 
     # @attr(test='wip')

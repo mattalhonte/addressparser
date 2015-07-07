@@ -82,26 +82,30 @@ def expand_directions(myString):
 #Street name dictionary doesn't give suffixes to digits (though it does give it to spelled-out words, so we get "FIFTH AVENUE" and 
 #"5 AVENUE", but not "5TH AVENUE").  This is again inconsistent with most signage, buuut machine-readable
 def remove_number_suffixes(myString):
-    return re.sub(r"""(?<=\d)st|nd|rd|th""", r'', myString)
+    return re.sub(r"""(\d)(st|nd|rd|th)""", r"""\1""", myString)
 
 #No reason to have a space before a comma, in NYC addresses or otherwise
 def no_space_commas(myString):
     return myString.replace(r""" ,""", r""",""")
 
-#A regex for streets with a direction but not the word "street"
-#Works on addresses that have already been extracted, then extracts the street name
+ regex for streets with a direction but not the word "street"
+#Works on addresses that have already been extracted, then extracts the street
+name
 numberStreet = re.compile(r"""(?<=\d\s) #It'll be one space away from a digit
-                               (?P<Direction>North|South|East|West) #It has a direction (either written or abbreviated)
-                               (?P<streetNumber>\s\d{1,3}) #Street number
-                               (?P<borAndState>(.*)(?<!Street),\s(New\sYork|Brooklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""", 
-                               re.IGNORECASE | re.X)
+(?P<Direction>North|South|East|West) #It has a d
+irection (either written or abbreviated)
+(?P<streetNumber>\s\d{1,3}) #Street number
+(?P<borAndState>(.*)(?<!Street),\s(New\sYork|Bro
+oklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
+re.IGNORECASE | re.X)
 
-def add_implied_street_to_dir_street(myString):
-    return re.sub(numberStreet, r"""\1\2 STREET\3""", myString)
+#Let's try and add the word "street" in a few places it's clearly implied
+def addImpliedStreetToDirStreet(myString):
+return re.sub(numberStreet, r"""\1\2 STREET\3""", myString)
+
+_ny_ny = re.compile('(new\s+york|NY)[\s,]+(new\s+york|NY)\s?', re.IGNORECASE)
 
 
-
-_ny_nY = re.compile('(new\s+york|NY)[\s,]+(new\s+york|NY)\s?', re.IGNORECASE)
 
 
 def filter_ny_ny(text):
@@ -165,15 +169,11 @@ def prepare_text(text, verbose=False):
 
     text = remove_number_suffixes(text)
     if verbose:                                         
-        print 'remove_number_suffixes:\n\t%s\n' % text
+        print 'expand_directions:\n\t%s\n' % text
   
-    text = no_space_commas(text)
+    text = expand_directions(text)
     if verbose:                                         
-        print 'no_space_commas:\n\t%s\n' % text
-
-    text = add_implied_street_to_dir_street(text)
-    if verbose:                                         
-        print 'add_implied_street_to_dir_street:\n\t%s\n' % text
+        print 'expand_directions:\n\t%s\n' % text
 
     return text
 
