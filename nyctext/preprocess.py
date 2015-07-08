@@ -201,4 +201,3 @@ def location_to_string(tree):
 #
 # def filterInManhattan(text):
 #     return re.sub(inManhattan, r', New York, NY', text)
-=======
