@@ -5,45 +5,36 @@ __license__ = "Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0"
 
 import re
 import historicMappings
-# from queens import rex_neighborhoods_queens
-# from brooklyn import rex_neighborhoods_brooklyn
-# from bronx import rex_neighborhoods_bronx
-# from statenisland import rex_neighborhoods_statenIsland
-# from manhattan import rex_neighborhoods_manhattan
 
 from neighborhoods import rex_neighborhoods_queens
 from neighborhoods import rex_neighborhoods_brooklyn
 from neighborhoods import rex_neighborhoods_bronx
 from neighborhoods import rex_neighborhoods_statenIsland
 from neighborhoods import rex_neighborhoods_manhattan
-_rex_boroughs = re.compile('(in\s+the\s+)Borough\s+of\s+'
-                           '(Brooklyn|Queens|Staten\s+Island|Bronx)',
-                           re.IGNORECASE)
-
-_rex_manhattan = re.compile('(in\s+the\s+)Borough\s+of\s+'
-                            '(Manhattan)',
-                            re.IGNORECASE)
-
-# match these...
-# BOROUGH OF QUEENS 15-5446-Block 1289, lot 15–
-# BOROUGH OF QUEENS 15-7412 - Block 8020, lot 6–
-# BOROUGH OF BROOKLYN 15-7494-Block 2382, lot 3–
-# BOROUGH OF MANHATTAN 15-6223 – Block 15, lot 22-
-_b = '[brooklyn|bronx|manhattan|staten\s+island|queens]'
-_rex_blockcodes = r'BOROUGH\s+of\s+%s[^b]+block[^,]+,\s+lot[\s\d]+.' % _b
-_rex_blockcodes = re.compile(_rex_blockcodes, re.IGNORECASE)
 
 
 def filter_boroughs(text):
-    global _rex_boroughs, _rex_manhattan
+    _rex_boroughs = re.compile('(in\s+the\s+)Borough\s+of\s+'
+                               '(Brooklyn|Queens|Staten\s+Island|Bronx)',
+                               re.I)
+
+    _rex_manhattan = re.compile('(in\s+the\s+)Borough\s+of\s+'
+                                '(Manhattan)',
+                                re.I)
     text = _rex_manhattan.sub('Manhattan, NY.\n', text)
     return _rex_boroughs.sub('\\2, NY.\n', text)
 
 
 def filter_blockcodes(text):
-    global _rex_blockcodes
+    # match these...
+    # BOROUGH OF QUEENS 15-5446-Block 1289, lot 15–
+    # BOROUGH OF QUEENS 15-7412 - Block 8020, lot 6–
+    # BOROUGH OF BROOKLYN 15-7494-Block 2382, lot 3–
+    # BOROUGH OF MANHATTAN 15-6223 – Block 15, lot 22-
+    _b = 'brooklyn|bronx|manhattan|staten\s+island|queens'
+    _rex_blockcodes = "BOROUGH\s+of\s+(%s)\s+[^b]{7,15}Block\s+\d+,\slot\s\d+.\s*" % _b
+    _rex_blockcodes = re.compile(_rex_blockcodes, re.I)
     return '.\n'.join([para for para in _rex_blockcodes.split(text)])
-
 
 # _street_abbreviations = re.compile('\s+(str?\.?)[\s,]', re.IGNORECASE)
 # _avenue_abbreviations = re.compile('\s+(ave?\.?)[\s,]', re.IGNORECASE)
@@ -90,12 +81,10 @@ def no_space_commas(myString):
 
 # regex for streets with a direction but not the word "street". Works on addresses that have already been extracted, then extracts the street name
 numberStreet = re.compile(r"""(?<=\d\s) #It'll be one space away from a digit
-(?P<Direction>North|South|East|West) #It has a d
-irection (either written or abbreviated)
-(?P<streetNumber>\s\d{1,3}) #Street number
-(?P<borAndState>(.*)(?<!Street),\s(New\sYork|Bro
-oklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
-re.IGNORECASE | re.X)
+                              (?P<Direction>North|South|East|West) #It has a direction (either written or abbreviated)
+                              (?P<streetNumber>\s\d{1,3}) #Street number
+                              (?P<borAndState>(.*)(?<!Street),\s(New\sYork|Brooklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
+                              re.IGNORECASE | re.X)
 
 #Let's try and add the word "street" in a few places it's clearly implied
 def add_implied_street_to_dir_street(myString):
@@ -103,32 +92,26 @@ def add_implied_street_to_dir_street(myString):
 
 _ny_ny = re.compile('(new\s+york|NY)[\s,]+(new\s+york|NY)\s?', re.IGNORECASE)
 
-
-
-
 def filter_ny_ny(text):
-    global _ny_ny
+    _ny_ny = r"\b((new\s*york|ny)\b[\s,]*)\b(new\s*york|ny)\b"
+    _ny_ny = re.compile(_ny_ny, re.I)
     return _ny_ny.sub('Manhattan, NY.\n', text)
 
 
 def filter_neighborhoods(text):
-    _t = text.lower()
-    if 'queens' not in _t:
-        text = rex_neighborhoods_queens.sub(', \\1, Queens,', text)
+    text = rex_neighborhoods_queens.sub(', \\1, Queens, ', text)
 
-    if 'brooklyn' not in _t:
-        text = rex_neighborhoods_brooklyn.sub(', \\1, Brooklyn,', text)
+    text = rex_neighborhoods_brooklyn.sub(', \\1, Brooklyn, ', text)
 
-    if 'staten island' not in _t:
-        text = rex_neighborhoods_statenIsland.sub(', \\1, Staten Island,', text)
+    text = rex_neighborhoods_statenIsland.sub(', \\1, Staten Island, ', text)
 
-    # skip if 'NY, NY' in expression
-    if 'manhattan' not in _t and 'ny, ny' not in _t:
-        text = rex_neighborhoods_manhattan.sub(', \\1, Manhattan,', text)
+    text = rex_neighborhoods_manhattan.sub(', \\1, Manhattan, ', text)
 
     # Marble Hill can be both manhattan and bronx
-    if 'marble hill' not in _t and 'bronx' not in _t:
-        text = rex_neighborhoods_bronx.sub(', \\1, Bronx,', text)
+    # if not _bronx.match(_t):
+    # if 'marble hill' not in _t and 'bronx' not in _t:
+    text = rex_neighborhoods_bronx.sub(', \\1, Bronx, ', text)
+
     text = text.replace(',,', ',')
     return text
 
@@ -218,3 +201,4 @@ def location_to_string(tree):
 #
 # def filterInManhattan(text):
 #     return re.sub(inManhattan, r', New York, NY', text)
+=======

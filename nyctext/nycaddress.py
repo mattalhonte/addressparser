@@ -5,6 +5,7 @@ __license__ = "Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0"
 
 
 import os
+import unicodedata
 import nltk
 nltk.data.path.append(os.path.join(os.path.dirname(__file__), 'nltk-data'))
 from nltk.tokenize import sent_tokenize
@@ -43,13 +44,15 @@ def matchAddresses(text, verbose=False):
 
     sentences = sent_tokenize(text)
     for s in sentences:
+        # s = transform(s, verbose=verbose)
+
         if verbose:
             print '\n\n'
             print '=' * 48
             print 'Sentence: %s\n' % s
 
         if verbose:
-            print 'Stripping White Spaces:\n\t%s\n' % text
+            print 'Stripping White Spaces:\n\t%s\n' % s
         s = re.sub('\s+', ' ', s)
         if len(s) < 10:
             if verbose:
@@ -74,11 +77,11 @@ def isValidAddress(ady, verbose=False):
 
     if not any([a[1] == 'StreetName' for a in address]):
         dic = {}
-        for v,k in address:
-            dic[k] = '%s %s' %(dic.get(k,''), v)
+        for v, k in address:
+            dic[k] = '%s %s' % (dic.get(k, ''), v)
 
         if 'BuildingName' in dic and 'PlaceName' in dic and \
-            'StateName' in dic:
+           'StateName' in dic:
             return True
 
         showFailureReason('StreetName', ady, address, verbose)
@@ -102,15 +105,9 @@ def lookup_geo(g, ady, verbose=False):
     streetName = ' '.join(streetName)
     borough = tags.get('PlaceName', '').lower()
 
-    # Todo - map neighborhoods to boroughs
-    # ie: long island city -> queens
-    #
-    # if borough == 'ny':
     if 'ny' in borough or 'manhattan' in borough:
         borough = 'manhattan'
 
-    # if borough == 'long island city':
-    #     borough = 'queens'
     if 'queens' in borough:
         borough = 'queens'
 
@@ -144,13 +141,19 @@ def lookup_geo(g, ady, verbose=False):
     place = RefLocation(streetAddress, borough, zipcode, latitude, longitude)
     return place.schema_object()
 
+def normalize_text(text):
+    'Remove accents and other annotations from unicode characters'
+    return unicodedata.normalize(
+              'NFKD', 
+              text.decode('utf8', 'strict')).encode('ascii', 'ignore')
 
 def parse(text, verbose=False):
+    text = normalize_text(text)
     candidates = matchAddresses(text, verbose)
     candidates = [location_to_string(c) for c in candidates]
 
     # only candidates that end in NY
-    rex = re.compile('(.+,\s+NY)', re.IGNORECASE)
+    rex = re.compile('(.+\s+NY)', re.IGNORECASE)
     candidates = [rex.match(c) for c in candidates]
     candidates = [c.group() for c in candidates if c is not None]
     return [c for c in candidates if isValidAddress(c, verbose)]

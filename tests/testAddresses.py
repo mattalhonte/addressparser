@@ -1,11 +1,8 @@
 import sys
 sys.path.append('..')
-
-from nose.plugins.skip import SkipTest
-from nose.plugins.attrib import attr
+import pytest
 import os.path
 import unittest
-# import codecs
 
 from nyctext import nycaddress as parser
 
@@ -78,7 +75,6 @@ class Address(unittest.TestCase):
                 expect = [xt % lu]
                 self.checkExpectation(source, expect)
 
-    @attr(test='wip')
     def testWithNumberStreetWithDashAndRoom(self):
         'basic - test with dash and Room'
 
@@ -105,13 +101,14 @@ class Address(unittest.TestCase):
         self.checkExpectation(source, expect)
 
     def testSaintAnneAvenue(self):
-        'Name with apostrophe'
+        'name with apostrophe'
         expected = [u"600 Saint Ann's Avenue Bronx, NY"]
         text = "Academy of Science: 600 Saint Ann's Avenue Bronx, NY"
         address = parser.parse(text)[0]
         self.assertIn(address, expected)
 
     def testStreetNamePreTypeAveOfAmericas(self):
+        'find Avenue of the Americas'
         expected = "131 Avenue Of The Americas Manhattan, NY"
         text = 'blab blah bleu %s foo fe hu' % expected
 
@@ -119,6 +116,7 @@ class Address(unittest.TestCase):
         self.assertIn(got[0], [expected])
 
     def testStreetNamePreTypes(self):
+        'test Avenue xxx'
         expected = [
             "1600 Avenue L Brooklyn, NY",
             "3000 Avenue X Brooklyn, NY",
@@ -162,7 +160,57 @@ class Address(unittest.TestCase):
 
     # @attr(test='wip')
     @SkipTest
+    def testAddressWithMultipleCity(self):
+        'test ... Queens, NY  NY, NY finds first address'
+
+        text = "11 W. 19th Street, NY, NY 10011 , New York, NY"
+        expected = "11 W 19th Street, Manhattan, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(expected, got)
+
+    def testHighwayAbbreviations(self):
+        'hwy, expy'
+# 3 IN 1 KITCHEN: 4902 FORT HAMILTON PARKWAY BROOKLYN, NY
+        text = "238 KINGS HWY BROOKLYN, NY"
+        expected = "238 KINGS Highway BROOKLYN, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+        text = "3050 WHITESTONE EXPY QUEENS, NY"
+        expected = "3050 WHITESTONE Expressway QUEENS, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+    def testAptAndSuite(self):
+        'handle ste and apt'
+
+        text = "35 WEST 89TH STREET APT. 1A NEW YORK, NY"
+        expected = "35 WEST 89TH STREET Apt 1A Manhattan, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+        text = "35 WEST 89TH STREET STE. 1A NEW YORK, NY"
+        expected = "35 WEST 89TH STREET Suite 1A Manhattan, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+    def testInferredStreet(self):
+        'infer street in manhattan'
+        text = "10 W 15th , New York, NY"
+        expected = "10 W 15th Street, Manhattan, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+    def testPeriodBetweenDirectionAndStreet(self):
+        'period handled between direction and street'
+        text = "Decker Design: 14W.23rd Street 3rd Floor, New York, NY"
+        expected = "14 W 23rd Street 3rd Floor, Manhattan, NY"
+        got = parser.parse(text)[0]
+        self.assertEqual(got, expected)
+
+    @pytest.mark.skipif("True")
     def testSaintNotStreet(self):
+        #This is unimplemented
         '701 St. Anns should resolve to Saint Anns instead of Street Anns'
         expected = ['701 St. Anns Avenue Bronx, NY']
 
@@ -172,31 +220,24 @@ class Address(unittest.TestCase):
             got = parser.parse(text, verbose=True)[0]
             self.assertIn(got, expected)
 
-    @SkipTest
-    def testXXX(self):
-        # This fails at sentence tokenizer.
-        # splitting on periods.
+    def testInitials(self):
+
+        text = '''
+            1180 Reverend J.A. Polite Ave. Bronx, NY.
+        '''
 
         expected = [
-            '1180 Reverend J.A. Polite Ave. Bronx, NY',
+            '1180 Reverend J A Polite Avenue Bronx, NY'
         ]
 
-        for text in expected:
-            print text
-            got = parser.parse(text, verbose=True)[0]
-            self.assertIn(got, expected)
+        got = parser.parse(text)[0]
+        self.assertIn(got, expected)
 
-    # @attr(test='wip')
-    @SkipTest
     def testColumbusCircle(self):
         'basic -  Columbus Circle'
 
-        #  the current sentence tokenizer splits on
-        #  cir.
-        #  TODO: How to fix?
-        #
-        lus = 'Circle Cir.'.split(' ')
+        lus = 'Circle Cir. Cir'.split(' ')
         for lu in lus:
             source = '4 Columbus %s NY, NY' % lu
-            expect = ['4 Columbus %s Manhattan, NY' % lu]
+            expect = ['4 Columbus Circle Manhattan, NY']
             self.checkExpectation(source, expect, True)
