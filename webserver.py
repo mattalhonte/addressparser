@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 __author__ = "C. Sudama, Matthew Alhonte"
-__credits__ = ["Mikael Hveem", ]
 __license__ = "Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0"
 
 import urllib3.contrib.pyopenssl
@@ -168,9 +167,7 @@ def parseaddresses():
 
     try:
         data = request.json
-        # have to make sure calling app is set to unicode
         source = data['source'].encode('utf8')
-        print 'AddressParser received: %s\n\nCalling parse_with_geo...\n' % source
         ret = jsonify(refLocation=parse_with_geo(source, g, True))
     except Exception, e:
         print 'Exception: %s' % e

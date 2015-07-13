@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Usage:
     adparse --file=<infile> [--trace]
@@ -10,6 +11,10 @@ Options:
     --trace         Print trace statement
     --geo           Return Geolocation attributes [default: False]
 """
+
+__author__ = "C. Sudama, Matthew Alhonte"
+__license__ = "Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0"
+
 from docopt import docopt
 from os import environ
 import codecs
@@ -32,7 +37,7 @@ def do_file(fn, g, trace=False, geo=False):
     total, parsed, failed = 0, 0, 0
     ads = []
     for line in codecs.open(fn, encoding='utf-8'):
-        line = line.strip()
+        line = line.encode('ascii', 'ignore').strip()
         if line == '':
             continue
 
@@ -49,7 +54,8 @@ def do_file(fn, g, trace=False, geo=False):
         else:
             failed += 1
 
-    print 'Summary:\n\t%04d parsed\n\t%04d failed\n\t%04d Total' % (parsed, failed, total)
+    print 'Summary:\n\t%04d parsed\n\t%04d failed\n\t%04d Total' \
+        % (parsed, failed, total)
 
 
 if __name__ == '__main__':
