@@ -62,12 +62,12 @@ def filter_blockcodes(text):
     #
 
 #The Street Name Dictionary uses 'NORTH' rather than 'N' or 'N.' or any other variation on that theme.  Interestingly, this is actually inconsistent with city signage - there is no streetsign that says "NORTH 1", it reads "N 1".  Still, streetsigns are not machine-readable, while the DOT's SND is nice and digitized
- def expand_directions(myString):
-     myString = re.sub(r"""(?<=\s)(N\.?)(?=\s)""", "NORTH", myString)
-     myString = re.sub(r"""(?<=\s)(S\.?)(?=\s)""", "SOUTH", myString)
-     myString = re.sub(r"""(?<=\s)(E\.?)(?=\s)""", "EAST", myString)
-     myString = re.sub(r"""(?<=\s)(W\.?)(?=\s)""", "WEST", myString)
-     return myString
+def expand_directions(myString):
+    myString = re.sub(r"""(?<=\s)(N\.?)(?=\s)""", "NORTH", myString)
+    myString = re.sub(r"""(?<=\s)(S\.?)(?=\s)""", "SOUTH", myString)
+    myString = re.sub(r"""(?<=\s)(E\.?)(?=\s)""", "EAST", myString)
+    myString = re.sub(r"""(?<=\s)(W\.?)(?=\s)""", "WEST", myString)
+    return myString
 
 #Street name dictionary doesn't give suffixes to digits (though it does give it to spelled-out words, so we get "FIFTH AVENUE" and 
 #"5 AVENUE", but not "5TH AVENUE").  This is again inconsistent with most signage, buuut machine-readable
