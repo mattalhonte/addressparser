@@ -14,21 +14,25 @@ class testPreprocess(unittest.TestCase):
     '''Tests individual functions in preprocess.py
     '''
 
+    def checkExpectation(self, source, expected, testFunction, verbose=True):
+        addresses = [testFunction(a) for a in source]
+        if verbose:
+            print 'source: %s' % source
+            print 'expected: %s' % expected
+            print 'got: %s' % addresses
+        for loc in addresses:
+            self.assertIn(loc, expected)
+            expected.remove(loc)
+        self.assertEqual(expected, [])
+
+
     def test_filter_boroughs(self):
         'Change address with "in <Borough>" to just "<Borough>"'
 
         source = [r"15 86 Street in the Borough of Brooklyn"] 
         expected = [r"15 86 Street Brooklyn, NY"]
-        
-        processed = [preprocess.filter_boroughs(address) for address in source]
 
-        for i in range(len(source)):
-            print "ORIGINAL: " + source[i]
-            print "PROCESSED: " + processed[i]
-            print "EXPECTED: " + expected[i]
-
-        self.assertEqual(processed, expected)
-
+        self.checkExpectation(source, expected, preprocess.filter_boroughs)
     
 
     def test_expand_directions(self):
@@ -37,14 +41,7 @@ class testPreprocess(unittest.TestCase):
         source = [r"35 N. 1 Street Brooklyn, NY"]
         expected = ["35 NORTH 1 Street Brooklyn, NY"]
         
-        processed = [preprocess.expand_directions(address) for address in source]
-
-        for i in range(len(source)):
-            print "ORIGINAL: " + source[i]
-            print "PROCESSED: " + processed[i]
-            print "EXPECTED: " + expected[i]
-
-        self.assertEqual(processed, expected)
+        self.checkExpectation(source, expected, preprocess.expand_directions)
 
 
     def test_remove_number_suffixes(self):
@@ -52,15 +49,8 @@ class testPreprocess(unittest.TestCase):
 
         source = [r"35 1st Street Brooklyn, NY"]
         expected = ["35 1 Street Brooklyn, NY"]
-        
-        processed = [preprocess.remove_number_suffixes(address) for address in source]
 
-        for i in range(len(source)):
-            print "ORIGINAL: " + source[i]
-            print "PROCESSED: " + processed[i]
-            print "EXPECTED: " + expected[i]
-
-        self.assertEqual(processed, expected)
+        self.checkExpectation(source, expected, preprocess.remove_number_suffixes)
 
 
     def test_no_space_commas(self):
@@ -69,14 +59,7 @@ class testPreprocess(unittest.TestCase):
         source = [r"35 1 Street Brooklyn , NY"]
         expected = ["35 1 Street Brooklyn, NY"]
         
-        processed = [preprocess.no_space_commas(address) for address in source]
-
-        for i in range(len(source)):
-            print "ORIGINAL: " + source[i]
-            print "PROCESSED: " + processed[i]
-            print "EXPECTED: " + expected[i]
-
-        self.assertEqual(processed, expected)
+        self.checkExpectation(source, expected, preprocess.no_space_commas)
 
     def test_add_implied_street_to_dir_street(self):
         'Change "North 1 Brooklyn, NY" to "North 1 Street Brooklyn, NY"'
@@ -84,15 +67,8 @@ class testPreprocess(unittest.TestCase):
         source = [r"35 North 1 Brooklyn, NY"]
         expected = ["35 North 1 STREET Brooklyn, NY"]
         
-        processed = [preprocess.add_implied_street_to_dir_street(address) for address in source]
 
-        for i in range(len(source)):
-            print "ORIGINAL: " + source[i]
-            print "PROCESSED: " + processed[i]
-            print "EXPECTED: " + expected[i]
-
-        self.assertEqual(processed, expected)
-
+        self.checkExpectation(source, expected, preprocess.add_implied_street_to_dir_street)
 
 
 
