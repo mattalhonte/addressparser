@@ -63,7 +63,7 @@ def no_space_commas(myString):
 numberStreet = re.compile(r"""(?<=\d\s) #It'll be one space away from a digit
                               (?P<Direction>North|South|East|West) #It has a direction (either written or abbreviated)
                               (?P<streetNumber>\s\d{1,3}) #Street number
-                              (?P<borAndState>(.*)(?<!Street),\s(New\sYork|Brooklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
+                              (?P<borAndState>(.*)(?<!Street)\s(New\sYork|Brooklyn|Queens|Staten\s+Island|Bronx),\s(New\sYork|NY))""",
                               re.IGNORECASE | re.X)
 
 #Let's try and add the word "street" in a few places it's clearly implied
